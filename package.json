@@ -26,7 +26,8 @@
     "dev": "npm run clean && tsc -p tsconfig.json --watch",
     "build": "npm run clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
     "clean": "rimraf ./lib",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "docs": "typedoc"
   },
   "author": "Nanang Mahdaen El Agung <mahdaen@gmail.com>",
   "license": "MIT",

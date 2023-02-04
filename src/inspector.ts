@@ -45,7 +45,18 @@ export function isNumber(value: unknown): boolean {
  * @returns {boolean}
  */
 export function isNumberString(value: string): boolean {
-  return typeof Number(value) === 'number';
+  const n = value.match(/^[-\d][\d.]+$/);
+  return n !== null && n.length > 0;
+}
+
+/**
+ * Check if the given value is a unit string (e.g, 120px, -10.5pt, -100cm).
+ * @param {string} value
+ * @returns {boolean}
+ */
+export function isUnitString(value: string): boolean {
+  const n = value.match(/^[-\d][\d.]+\w+$/);
+  return n !== null && n.length > 0;
 }
 
 /**

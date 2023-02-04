@@ -38,7 +38,7 @@ export function read<T extends object, P extends string>(
 export function write<T extends object, P extends string>(
   object: T,
   path: F.AutoPath<T, P>,
-  value?: O.Path<T, S.Split<P>>
+  value?: unknown
 ): void {
   const key = path as string;
 
@@ -56,9 +56,10 @@ export function write<T extends object, P extends string>(
         a[b] = value;
       } else {
         const next = a[b];
+        const nextKey = keys[i + 1];
 
         if (typeof next !== 'object') {
-          a[b] = Number(b) ? [] : {};
+          a[b] = (nextKey === '0' || Number(nextKey)) ? [] : {};
         }
       }
 
@@ -116,6 +117,10 @@ export function merge(object: object, source: object, cleanup?: boolean) {
  * @param {unknown[]} source - An array to pull the new item from.
  */
 export function mergeItems(array: unknown[], source: unknown[], cleanup?: boolean) {
+  if (!isArray(array) || !isArray(source)) {
+    throw new Error('Target and source must be an Array!');
+  }
+
   source.forEach((item, i) => {
     if (isArray(array[i]) && isArray(item)) {
       mergeItems(array[i] as unknown[], item as unknown[], cleanup);
@@ -127,7 +132,7 @@ export function mergeItems(array: unknown[], source: unknown[], cleanup?: boolea
   });
 
   if (cleanup && array.length > source.length) {
-    array.splice(source.length - 1, array.length - source.length);
+    array.splice(source.length, array.length - source.length);
   }
 }
 

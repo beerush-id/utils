@@ -1,4 +1,4 @@
-import { isArray, isBooleanString, isDateString, isNumberString, isObject, isString } from './inspector';
+import { isArray, isBooleanString, isDateString, isNumberString, isObject, isString, isUnitString } from './inspector';
 
 /**
  * Convert string to a generic type such as boolean, date, etc.
@@ -16,11 +16,23 @@ export function extract(value: unknown) {
       return Number(value);
     } else if (isDateString(value)) {
       return new Date(value);
-    } else {
-      return value;
     }
-  } else {
-    return value;
+  }
+
+  return value;
+}
+
+/**
+ * Extract the value and unit of a unit string (e.g, '10px' into { value: 10, unit: 'px' }).
+ * @param {string} value
+ * @returns {{unit: string, value: number}}
+ */
+export function unit(value: string) {
+  if (isUnitString(value)) {
+    return {
+      value: parseFloat(value),
+      unit: value.replace(`${ parseFloat(value) }`, '')
+    };
   }
 }
 

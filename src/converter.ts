@@ -23,7 +23,7 @@ export function extract(value: unknown) {
 }
 
 /**
- * Extract the value and unit of a unit string (e.g, '10px' into { value: 10, unit: 'px' }).
+ * Extract the value and unit of a unit string (e.g, `'10px'` into `{ value: 10, unit: 'px' }`).
  * @param {string} value
  * @returns {{unit: string, value: number}}
  */

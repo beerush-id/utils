@@ -5,7 +5,6 @@ specifiers:
   jest: ^29.4.1
   rimraf: ^4.1.2
   ts-jest: ^29.0.5
-  ts-toolbelt: ^9.6.0
   typedoc: ^0.23.24
   typescript: ^4.9.5
 
@@ -14,7 +13,6 @@ devDependencies:
   jest: 29.4.1
   rimraf: 4.1.2
   ts-jest: 29.0.5_wrz2f4catxnbofknv5bs36jgqa
-  ts-toolbelt: 9.6.0
   typedoc: 0.23.24_typescript@4.9.5
   typescript: 4.9.5
 
@@ -2256,10 +2254,6 @@ packages:
       semver: 7.3.8
       typescript: 4.9.5
       yargs-parser: 21.1.1
-    dev: true
-
-  /ts-toolbelt/9.6.0:
-    resolution: {integrity: sha512-nsZd8ZeNUzukXPlJmTBwUAuABDe/9qtVDelJeT/qW0ow3ZS3BsQJtNkan1802aM9Uf68/Y8ljw86Hu0h5IUW3w==}
     dev: true
 
   /type-detect/4.0.8:

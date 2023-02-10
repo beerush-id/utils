@@ -1,16 +1,15 @@
-import { F, O, S } from 'ts-toolbelt';
 import { isArray, isObject } from './inspector';
 
 /**
  * Get the value of an object by using a path.
  * @param {T} object - An object to get the value from.
- * @param {AutoPath<T, P>} path - A dot separated string as a key to get the value.
- * @returns {Path<T, Split<P, ".">>}
+ * @param {string} path - A dot separated string as a key to get the value.
+ * @returns {any}
  */
-export function read<T extends object, P extends string>(
+export function read<T extends object>(
   object: T,
-  path: F.AutoPath<T, P>
-): O.Path<T, S.Split<P>> {
+  path: string
+): any {
   const key = path as string;
 
   if (typeof object !== 'object') {
@@ -23,21 +22,21 @@ export function read<T extends object, P extends string>(
     return keys.reduce((a, b, i) => {
       const next = a[b];
       return (i + 1) === keys.length ? next : (next || {});
-    }, object as O.Object) as never;
+    }, object as any) as never;
   } else {
-    return (object as O.Object)[key];
+    return (object as any)[key];
   }
 }
 
 /**
  * Set the value of an object by using a path.
  * @param {T} object - An object to set the value into.
- * @param {AutoPath<T, P>} path - A dot separated string as a path to set the value.
- * @param {Path<T, S.Split<P>>} value - New value to be set.
+ * @param {string} path - A dot separated string as a path to set the value.
+ * @param {unknown} value - New value to be set.
  */
-export function write<T extends object, P extends string>(
+export function write<T extends object>(
   object: T,
-  path: F.AutoPath<T, P>,
+  path: string,
   value?: unknown
 ): void {
   const key = path as string;
@@ -49,7 +48,7 @@ export function write<T extends object, P extends string>(
   const keys = key.split('.');
 
   if (keys.length <= 1) {
-    (object as O.Object)[key] = value;
+    (object as any)[key] = value;
   } else {
     keys.reduce((a, b, i) => {
       if ((i + 1) === keys.length) {
@@ -64,7 +63,7 @@ export function write<T extends object, P extends string>(
       }
 
       return a[b];
-    }, object as O.Object);
+    }, object as any);
   }
 }
 

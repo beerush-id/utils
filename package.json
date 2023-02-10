@@ -1,6 +1,6 @@
 {
   "name": "@beerush/utils",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "Beerush Typescript Utilities",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
@@ -9,7 +9,7 @@
     ".": {
       "types": "./lib/esm/index.d.ts",
       "import": "./lib/esm/index.js",
-      "require": "./lib/cjs/index.cjs"
+      "require": "./lib/cjs/index.js"
     }
   },
   "directories": {

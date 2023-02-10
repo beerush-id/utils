@@ -33,7 +33,6 @@ describe('Extract', function() {
 
   it('should convert "2023-02-04T06:25:49.231Z" into Date', function() {
     const bool = extract('2023-02-04T06:25:49.231Z');
-    console.log(bool, isDateString('2023-02-04T06:25:49.231Z'));
     expect(isDate(bool)).toBe(true);
   });
 });

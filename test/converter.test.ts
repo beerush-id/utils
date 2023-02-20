@@ -1,4 +1,5 @@
-import { extract, isDate, isDateString } from '../src';
+import { extract } from '../src/converter';
+import { isDate } from '../src/inspector';
 
 describe('Extract', function() {
   it('should preserve true as true', function() {

@@ -1,4 +1,4 @@
-import { merge, mergeItems, read, replace, replaceItems, write } from '../src';
+import { merge, mergeItems, read, replace, replaceItems, write } from '../src/object';
 
 const obj: any = {
   a: 1,

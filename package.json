@@ -1,15 +1,46 @@
 {
   "name": "@beerush/utils",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Beerush Typescript Utilities",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
   "typings": "lib/esm/index.d.ts",
   "exports": {
+    "./package.json": "./package.json",
     ".": {
       "types": "./lib/esm/index.d.ts",
       "import": "./lib/esm/index.js",
       "require": "./lib/cjs/index.js"
+    },
+    "./common": {
+      "types": "./lib/esm/common.d.ts",
+      "import": "./lib/esm/common.js",
+      "require": "./lib/cjs/common.js"
+    },
+    "./converter": {
+      "types": "./lib/esm/converter.d.ts",
+      "import": "./lib/esm/converter.js",
+      "require": "./lib/cjs/converter.js"
+    },
+    "./css": {
+      "types": "./lib/esm/css.d.ts",
+      "import": "./lib/esm/css.js",
+      "require": "./lib/cjs/css.js"
+    },
+    "./inspector": {
+      "types": "./lib/esm/inspector.d.ts",
+      "import": "./lib/esm/inspector.js",
+      "require": "./lib/cjs/inspector.js"
+    },
+    "./object": {
+      "types": "./lib/esm/object.d.ts",
+      "import": "./lib/esm/object.js",
+      "require": "./lib/cjs/object.js"
+    },
+    "./string": {
+      "types": "./lib/esm/string.d.ts",
+      "import": "./lib/esm/string.js",
+      "require": "./lib/cjs/string.js"
     }
   },
   "directories": {
@@ -24,9 +55,13 @@
     "access": "public"
   },
   "scripts": {
-    "dev": "npm run clean && tsc -p tsconfig.json --watch",
+    "dev": "npm run clean:esm && tsc -p tsconfig.json --watch",
+    "dev:esm": "tsc -p tsconfig.json --watch",
+    "dev:cjs": "tsc -p tsconfig-cjs.json --watch",
     "build": "npm run test && npm run clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
     "clean": "rimraf ./lib",
+    "clean:esm": "rimraf ./lib/esm",
+    "clean:cjs": "rimraf ./lib/cjs",
     "prepublish": "npm run build && npm run docs",
     "docs": "typedoc",
     "test": "jest"
@@ -52,5 +87,9 @@
   "bugs": {
     "url": "https://github.com/beerush-id/utils/issues"
   },
-  "homepage": "https://github.com/beerush-id/utils#readme"
+  "homepage": "https://github.com/beerush-id/utils#readme",
+  "engines": {
+    "node": ">=16.0.0",
+    "typescript": ">=4.9.5"
+  }
 }

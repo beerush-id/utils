@@ -1,12 +1,12 @@
 {
   "name": "@beerush/utils",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "description": "Beerush Typescript Utilities",
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
   "typings": "lib/esm/index.d.ts",
   "exports": {
-    "./package.json": "./package.json",
+    "./package.json": "./lib/package.json",
     ".": {
       "types": "./lib/esm/index.d.ts",
       "import": "./lib/esm/index.js",
@@ -55,10 +55,10 @@
     "access": "public"
   },
   "scripts": {
-    "dev": "npm run clean:esm && tsc -p tsconfig.json --watch",
-    "dev:esm": "tsc -p tsconfig.json --watch",
-    "dev:cjs": "tsc -p tsconfig-cjs.json --watch",
-    "build": "npm run test && npm run clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
+    "dev": "npm run clean:esm && tsc-esm -p tsconfig.json --watch",
+    "dev:esm": "tsc-esm -p tsconfig.json --watch",
+    "dev:cjs": "tsc-esm -p tsconfig-cjs.json --watch",
+    "build": "npm run test && npm run clean && tsc-esm -p tsconfig.json && tsc-esm -p tsconfig-cjs.json && node ./pack.js",
     "clean": "rimraf ./lib",
     "clean:esm": "rimraf ./lib/esm",
     "clean:cjs": "rimraf ./lib/cjs",
@@ -69,6 +69,7 @@
   "author": "Nanang Mahdaen El Agung <mahdaen@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@digitak/tsc-esm": "^3.1.4",
     "@types/jest": "^29.4.0",
     "jest": "^29.4.1",
     "rimraf": "^4.1.2",

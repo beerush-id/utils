@@ -1,5 +1,5 @@
-import { isNumber, isObject, isString } from './inspector';
-import { dash } from './string';
+import { isNumber, isObject, isString } from './inspector.js';
+import { dash } from './string.js';
 
 export type Unit = 'px' | '%' | 'em' | 'rem' | 'vw' | 'vh' | string;
 
@@ -361,9 +361,9 @@ export function joinTransforms({ scale, rotate, translate, skew }: ExtendedStyle
 
 /**
  * Convert **`StylerOptions`** object to CSS String.
- * @param {"linear" | "radial"} type
+ * @param {'linear' | 'radial'} type
  * @param {number | undefined} angle
- * @param {"circle" | "ellipse" | "closest-side" | "closest-corner" | "farthest-side" | "farthest-corner" | undefined} shape
+ * @param {'circle' | 'ellipse' | 'closest-side' | 'closest-corner' | 'farthest-side' | 'farthest-corner' | undefined} shape
  * @param {GradientValue[]} values
  * @returns {string}
  */

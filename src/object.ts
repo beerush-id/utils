@@ -1,4 +1,4 @@
-import { isArray, isObject } from './inspector';
+import { isArray, isObject } from './inspector.js';
 
 /**
  * Get the value of an object by using a path.

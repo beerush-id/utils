@@ -6,13 +6,15 @@
       "ES2020",
       "DOM"
     ],
-    "module": "ES2020",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "nodenext",
     "declaration": true,
     "sourceMap": false,
     "removeComments": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
     "strict": true,
     "skipLibCheck": true
   },

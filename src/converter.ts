@@ -1,4 +1,12 @@
-import { isArray, isBooleanString, isDateString, isNumberString, isObject, isString, isUnitString } from './inspector';
+import {
+  isArray,
+  isBooleanString,
+  isDateString,
+  isNumberString,
+  isObject,
+  isString,
+  isUnitString
+} from './inspector.js';
 
 /**
  * Convert string to a generic type such as boolean, date, etc.

@@ -59,3 +59,23 @@ export function makePath(path: string): string {
 export function cleanPath(path: string): string {
   return path.replace(/\/+/g, '/').replace(/\/$/, '');
 }
+
+/**
+ * Convert string into a valid Base64 encoding.
+ * @param {string} input
+ * @param {string} mime
+ * @returns {string}
+ */
+export function base64(input: string, mime = 'image/png') {
+  if (input.startsWith('data:')) return input;
+  return `data:${ mime };base64,${ input }`;
+}
+
+/**
+ * Decode Base64 string.
+ * @param {string} input
+ * @returns {string}
+ */
+export function base64Decode(input: string) {
+  return input.replace(/^data:[^,]+,/, '');
+}

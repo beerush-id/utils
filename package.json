@@ -84,8 +84,7 @@
   },
   "homepage": "https://github.com/beerush-id/utils#readme",
   "engines": {
-    "node": ">=16.0.0",
-    "typescript": ">=4.9.5"
+    "node": ">=16.0.0"
   },
   "type": "module"
 }

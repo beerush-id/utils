@@ -123,5 +123,5 @@ tsconfig.json
 docs
 test
 .eslintrc.json
-jest.config.js
+jest.config.mjs
 .eslintrc

@@ -19,5 +19,5 @@
     "skipLibCheck": true
   },
   "include": ["./src"],
-  "exclude": ["node_modules", "**/*.spec.ts", "jest.config.js"]
+  "exclude": ["node_modules", "**/*.spec.ts", "jest.config.mjs" ]
 }

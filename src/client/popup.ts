@@ -4,7 +4,7 @@ import { CSSProperties, style } from './style.js';
 export type DirectionX = 'before' | 'after' | 'between' | 'left' | 'right';
 export type DirectionY = 'above' | 'below' | 'between' | 'top' | 'bottom';
 
-export type PopupOptions = {
+export type RectOptions = {
   /** HTML Element to apply the styles to */
   element?: HTMLElement;
   /** HTML Element to apply the relative styles from */
@@ -22,14 +22,14 @@ export type PopupOptions = {
   observe?: boolean;
 };
 
-export type CreatePopupOptions = {
+export type PopupOptions = {
   action: 'hover' | 'click' | string;
-  options: PopupOptions;
-  container?: string;
+  options: RectOptions;
+  container?: string | HTMLElement;
   overlay?: HTMLElement;
 }
 
-export type CreateDialogOptions = {
+export type DialogOptions = {
   container?: string;
   overlay?: HTMLElement;
 }
@@ -37,18 +37,31 @@ export type CreateDialogOptions = {
 export type PopupInstance = {
   show: (e?: MouseEvent, cb?: (t: 'open' | 'close', e?: MouseEvent) => void) => void;
   hide: (e?: MouseEvent, cb?: (t: 'open' | 'close', e?: MouseEvent) => void) => void;
-  update: (options: CreatePopupOptions) => void;
+  update: (options: PopupOptions) => void;
   destroy: () => void;
   disconnect?: () => void;
 };
 
-const observers = new WeakMap<HTMLElement, ResizeObserver>();
+export type TooltipOptions = {
+  text: string;
+  className?: string;
+  xDir?: DirectionX;
+  yDir?: DirectionY;
+  container?: string;
+}
+
+export type TooltipInstance = {
+  update: (option: string | TooltipOptions) => void;
+  destroy: () => void;
+}
+
+const OBSERVERS = new WeakMap<HTMLElement, ResizeObserver>();
 
 /**
  * Apply a fixed position bounds of the given element, relative to the given parent element.
- * @param {PopupOptions} options - The popup options.
+ * @param {RectOptions} options - The popup options.
  */
-export function popup(options: PopupOptions) {
+export function popRect(options: RectOptions) {
   const {
     element,
     parent,
@@ -202,11 +215,11 @@ export function popup(options: PopupOptions) {
 
 /**
  * Move the given element to the given slot, and apply the Popup positions.
- * @param {string} slot - String as the document query selector.
- * @param {PopupOptions} options - The popup options.
+ * @param {string|HTMLElement} slot - String as the document query selector.
+ * @param {RectOptions} options - The popup options.
  * @param debounce - Delay before applying the styles.
  */
-export function popTo(slot: string, options: PopupOptions, debounce?: number) {
+export function popTo(slot: string | HTMLElement, options: RectOptions, debounce?: number) {
   const { element, observe } = options;
 
   if (!element) {
@@ -217,14 +230,14 @@ export function popTo(slot: string, options: PopupOptions, debounce?: number) {
   const apply = () => {
     if (typeof debounce === 'number') {
       setTimeout(() => {
-        popup(options);
+        popRect(options);
       }, debounce);
     } else {
-      popup(options);
+      popRect(options);
     }
   };
 
-  const wrapper = document.querySelector(slot);
+  const wrapper = typeof slot === 'string' ? document.querySelector(slot) : slot;
 
   if (wrapper) {
     wrapper.appendChild(element);
@@ -255,16 +268,16 @@ export function popTo(slot: string, options: PopupOptions, debounce?: number) {
     });
 
     observer.observe(document.body);
-    observers.set(element, observer);
+    OBSERVERS.set(element, observer);
   }
 }
 
 /**
  * Restore the element node to its parent node.
- * @param {PopupOptions} options
+ * @param {RectOptions} options
  * @param {number} debounce
  */
-export function restore(options: PopupOptions, debounce?: number) {
+export function restore(options: RectOptions, debounce?: number) {
   const { element, parent } = options;
 
   if (!element || !parent) {
@@ -284,43 +297,24 @@ export function restore(options: PopupOptions, debounce?: number) {
     parent.appendChild(element);
   }
 
-  const observer = observers.get(element);
+  const observer = OBSERVERS.get(element);
   if (observer) {
     observer.disconnect();
-    observers.delete(element);
-  }
-}
-
-/**
- * Move the given element to the given target.
- * @param {HTMLElement | string} target
- * @param {HTMLElement} element
- */
-export function appendTo(target: HTMLElement | string, element: HTMLElement) {
-  if (typeof target === 'string') {
-    const wrapper = document.querySelector(target);
-
-    if (wrapper) {
-      wrapper.appendChild(element);
-    } else {
-      document.body.appendChild(element);
-    }
-  } else {
-    target.appendChild(element);
+    OBSERVERS.delete(element);
   }
 }
 
 /**
  * Create a popup instance.
- * @param {HTMLElement} element
- * @param {CreatePopupOptions} config
- * @returns {PopupInstance}
+ * @param {HTMLElement} self
+ * @param {PopupOptions} config
+ * @return {PopupInstance}
  */
-export function createPopup(element: HTMLElement, config: CreatePopupOptions): PopupInstance {
+export function popup(self: HTMLElement, config: PopupOptions): PopupInstance {
   let { action, container = 'body', overlay } = config;
 
-  const parent = element.parentElement as HTMLElement;
-  const options = { ...config.options, element: element, parent } as PopupOptions;
+  const parent = self.parentElement as HTMLElement;
+  const options = { ...config.options, element: self, parent } as RectOptions;
 
   const show = (e?: MouseEvent, cb?: (t: 'open' | 'close', e?: MouseEvent) => void) => {
     if (overlay) {
@@ -386,14 +380,14 @@ export function createPopup(element: HTMLElement, config: CreatePopupOptions): P
     show,
     hide,
     disconnect,
-    update(cfg: CreatePopupOptions) {
+    update(cfg: PopupOptions) {
       action = cfg.action;
       overlay = cfg.overlay;
       container = cfg.container || 'body';
     },
     destroy() {
       disconnect();
-      element.remove();
+      self.remove();
 
       if (overlay) {
         overlay.remove();
@@ -404,23 +398,23 @@ export function createPopup(element: HTMLElement, config: CreatePopupOptions): P
 
 /**
  * Create a dialog instance.
- * @param {HTMLElement} element
- * @param {CreateDialogOptions} options
+ * @param {HTMLElement} self
+ * @param {DialogOptions} options
  * @returns {PopupInstance}
  */
-export function createDialog(element: HTMLDialogElement, options: CreateDialogOptions): PopupInstance {
+export function dialog(self: HTMLDialogElement, options: DialogOptions): PopupInstance {
   let { container = '.dialog-container', overlay } = options;
-  const parent = element.parentElement as HTMLDialogElement;
+  const parent = self.parentElement as HTMLDialogElement;
 
   const show = (e?: MouseEvent, cb?: (t: 'open' | 'close', e?: MouseEvent) => void) => {
     if (overlay) {
       appendTo(container, overlay);
     }
 
-    if (element instanceof HTMLDialogElement) {
-      element.showModal();
+    if (self instanceof HTMLDialogElement) {
+      self.showModal();
     } else {
-      appendTo(container, element);
+      appendTo(container, self);
     }
 
     if (typeof cb === 'function') {
@@ -433,10 +427,10 @@ export function createDialog(element: HTMLDialogElement, options: CreateDialogOp
       appendTo(parent, overlay);
     }
 
-    if (element instanceof HTMLDialogElement) {
-      element.close();
+    if (self instanceof HTMLDialogElement) {
+      self.close();
     } else {
-      appendTo(parent, element);
+      appendTo(parent, self);
     }
 
     if (typeof cb === 'function') {
@@ -456,21 +450,21 @@ export function createDialog(element: HTMLDialogElement, options: CreateDialogOp
     }
   };
 
-  if (element instanceof HTMLDialogElement) {
-    element.addEventListener('close', cleanup);
-    element.addEventListener('click', backdropClick);
+  if (self instanceof HTMLDialogElement) {
+    self.addEventListener('close', cleanup);
+    self.addEventListener('click', backdropClick);
   }
 
   return {
     show, hide,
-    update(cfg: CreatePopupOptions) {
+    update(cfg: PopupOptions) {
       overlay = cfg.overlay;
-      container = cfg.container || '.dialog-container';
+      container = (cfg.container || '.dialog-container') as string;
     },
     destroy() {
-      element.remove();
-      element.removeEventListener('close', cleanup);
-      element.removeEventListener('click', backdropClick);
+      self.remove();
+      self.removeEventListener('close', cleanup);
+      self.removeEventListener('click', backdropClick);
 
       if (overlay) {
         overlay.remove();
@@ -479,7 +473,87 @@ export function createDialog(element: HTMLDialogElement, options: CreateDialogOp
   };
 }
 
-export function isBackdropClick(event: MouseEvent): boolean {
+/**
+ * Create a tooltip instance.
+ * @param {HTMLElement} parent
+ * @param {string | TooltipOptions} textOption
+ * @return {TooltipInstance}
+ */
+export function tooltip(parent: HTMLElement, textOption: string | TooltipOptions): TooltipInstance {
+  const self = document.createElement('span');
+  const container = createPopupContainer((textOption as TooltipOptions).container);
+
+  self.setAttribute('class', 'tooltip fade-in');
+  parent.appendChild(self);
+
+  const update = (option: string | TooltipOptions) => {
+    if (typeof option === 'string') {
+      self.innerText = option;
+    } else if (typeof option === 'object') {
+      self.innerText = option.text;
+
+      if (option.className) {
+        self.setAttribute('class', [ 'tooltip fade-in', option.className ].join(' '));
+      }
+    }
+  };
+
+  update(textOption);
+
+  const show = () => {
+    popTo(container, {
+      element: self,
+      parent,
+      xDir: (textOption as TooltipOptions).xDir,
+      yDir: (textOption as TooltipOptions).yDir,
+    });
+  };
+
+  const hide = () => {
+    restore({
+      element: self,
+      parent,
+    });
+  };
+
+  parent.addEventListener('mouseenter', show);
+  parent.addEventListener('mouseleave', hide);
+
+  return {
+    update,
+    destroy() {
+      self.remove();
+      parent.removeEventListener('mouseenter', show);
+      parent.removeEventListener('mouseleave', hide);
+    },
+  };
+}
+
+/**
+ * Move the given element to the given target.
+ * @param {HTMLElement | string} target
+ * @param {HTMLElement} element
+ */
+function appendTo(target: HTMLElement | string, element: HTMLElement) {
+  if (typeof target === 'string') {
+    const wrapper = document.querySelector(target);
+
+    if (wrapper) {
+      wrapper.appendChild(element);
+    } else {
+      document.body.appendChild(element);
+    }
+  } else {
+    target.appendChild(element);
+  }
+}
+
+/**
+ * Check if the given mouse event is a backdrop click.
+ * @param {MouseEvent} event
+ * @return {boolean}
+ */
+function isBackdropClick(event: MouseEvent): boolean {
   const target = event.target as HTMLElement;
 
   if (target) {
@@ -488,4 +562,42 @@ export function isBackdropClick(event: MouseEvent): boolean {
   }
 
   return false;
+}
+
+/**
+ * Create a popup container.
+ * @param {string} name
+ * @return {HTMLElement}
+ */
+function createPopupContainer(name?: string): HTMLElement {
+  let container = document.querySelector(name ?? '.popup-container');
+
+  if (!container) {
+    container = document.createElement('div');
+    container.classList.add('popup-container');
+  }
+
+  return container as HTMLElement;
+}
+
+/**
+ * Create a popup instance.
+ * @deprecated Use `popup` instead.
+ * @param {HTMLElement} element
+ * @param {PopupOptions} config
+ * @returns {PopupInstance}
+ */
+export function createPopup(element: HTMLElement, config: PopupOptions): PopupInstance {
+  return popup(element, config);
+}
+
+/**
+ * Create a dialog instance.
+ * @deprecated Use `dialog` instead.
+ * @param {HTMLDialogElement} element
+ * @param {DialogOptions} options
+ * @return {PopupInstance}
+ */
+export function createDialog(element: HTMLDialogElement, options: DialogOptions): PopupInstance {
+  return dialog(element, options);
 }

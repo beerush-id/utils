@@ -176,3 +176,12 @@ function createSelector(selector: string, parent?: string) {
     return `${ parent } ${ selector }`;
   }
 }
+
+export function contourFilter(amount: number, color = 'red'): string {
+  const top = `drop-shadow(-${ amount } 0 0 ${ color })`;
+  const right = `drop-shadow(0 -${ amount } 0 ${ color })`;
+  const bottom = `drop-shadow(${ amount } 0 0 ${ color })`;
+  const left = `drop-shadow(0 ${ amount } 0 ${ color })`;
+
+  return [ top, right, bottom, left ].join(' ');
+}

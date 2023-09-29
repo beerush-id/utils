@@ -106,15 +106,6 @@ export function replace(object: object, source: object): void {
 }
 
 /**
- * Recursively replace the item of an array with item from another array by preserving the reference.
- * @param {unknown[]} array - An array to put the new item into.
- * @param {unknown[]} source - An array to pull the new item from.
- */
-export function replaceItems(array: unknown[], source: unknown[]): void {
-  mergeItems(array, source, true);
-}
-
-/**
  * Recursively merge two objects by preserving the reference.
  * @param {object} object - An object to put the new value into.
  * @param {object} source - An object to put the new value from.
@@ -127,7 +118,9 @@ export function merge(object: object, source: object, cleanup?: boolean) {
     } else if (isObject(object[key as never]) && isObject(value)) {
       merge(object[key as never], value, cleanup);
     } else {
-      object[key as never] = value as never;
+      if (object[key as never] !== value) {
+        object[key as never] = value as never;
+      }
     }
   }
 
@@ -151,19 +144,7 @@ export function mergeItems(array: unknown[], source: unknown[], cleanup?: boolea
     throw new Error('Target and source must be an Array!');
   }
 
-  source.forEach((item, i) => {
-    if (isArray(array[i]) && isArray(item)) {
-      mergeItems(array[i] as unknown[], item as unknown[], cleanup);
-    } else if (isObject(array[i]) && isObject(item)) {
-      merge(array[i] as object, item as object, cleanup);
-    } else {
-      array[i] = item;
-    }
-  });
-
-  if (cleanup && array.length > source.length) {
-    array.splice(source.length, array.length - source.length);
-  }
+  array.splice(0, array.length, ...source);
 }
 
 /**

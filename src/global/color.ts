@@ -309,7 +309,7 @@ export function colorDarken(color: HEXColor, amount: string | number): string {
 
   if (COLOR_HEX_REGEX.test(color)) {
     const [ r, g, b ] = hexToRgb(color);
-    return `rgb(${ r / value }, ${ g / value }, ${ b / value })`;
+    return `rgb(${ Math.round(r / value) }, ${ Math.round(g / value) }, ${ Math.round(b / value) })`;
   }
 
   return color;

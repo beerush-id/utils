@@ -6,12 +6,18 @@ export type CSSProperties = Partial<
     [K in KebabCase<keyof CSSStyleDeclaration>]: string | number;
   } &
   {
-    [K in keyof CSSStyleDeclaration]: CSSStyleDeclaration[K]
+    [K in keyof CSSStyleDeclaration]: string | number;
   } &
   {
     [key: `--${ string }`]: string | number;
   }
 >;
+
+export type CSSStyles = {
+  [K in keyof CSSStyleDeclaration]: number | string;
+} & {
+  [key: `--${ string }`]: number | string;
+};
 
 export type StyleOptions = {
   styles: CSSProperties;
@@ -49,9 +55,9 @@ function styleElement(element: HTMLElement, styles: CSSProperties, reset?: boole
   }
 
   for (const [ key, value ] of entries(styles)) {
-    const val: string = typeof value === 'number' ? (value > 0 ? `${ value }px` : `${ value }`) : value as string;
+    if (typeof value !== 'undefined' && value !== null) {
+      const val: string = toCssUnit(key, value);
 
-    if (val) {
       if ((key as string).includes('-')) {
         element.style.setProperty(key as string, val);
       } else {
@@ -60,3 +66,30 @@ function styleElement(element: HTMLElement, styles: CSSProperties, reset?: boole
     }
   }
 }
+
+export function toCssUnit(key: keyof CSSProperties, value: string | number): string {
+  if (typeof value === 'string') return value;
+
+  const unit = UNIT_MAP.find(({ search }) => search.test(key as string));
+
+  if (unit) {
+    return `${ value }${ unit.unit }`;
+  }
+
+  if ((value > 0 || value < 0)) {
+    return `${ value }px`;
+  }
+
+  return `${ value }`;
+}
+
+const UNIT_MAP = [
+  {
+    search: /^rotate/,
+    unit: 'deg',
+  },
+  {
+    search: /^scale/,
+    unit: '',
+  },
+];

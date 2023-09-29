@@ -7,8 +7,10 @@ export type DirectionY = 'above' | 'below' | 'between' | 'top' | 'bottom';
 export type RectOptions = {
   /** HTML Element to apply the styles to */
   element?: HTMLElement;
-  /** HTML Element to apply the relative styles from */
+  /** HTML Element to move from and restore to the element */
   parent?: HTMLElement;
+  /** HTML Element to get the bounding rectangles from. Default to parent element. */
+  bounding?: HTMLElement;
   /** The horizontal position of the element from the parent */
   xDir?: DirectionX;
   /** The vertical position of the element from the parent */
@@ -48,6 +50,7 @@ export type TooltipOptions = {
   xDir?: DirectionX;
   yDir?: DirectionY;
   container?: string;
+  bounding?: HTMLElement;
 }
 
 export type TooltipInstance = {
@@ -65,33 +68,43 @@ export function popRect(options: RectOptions) {
   const {
     element,
     parent,
+    bounding = parent,
     xDir = 'between',
     yDir = 'below',
     scale = 1,
     swap = true,
     space = 8,
   } = options;
-  if (!element || !parent) {
+  if (!element || !bounding) {
     console.warn(
-      'Popup ignored because the given element/parent in the options is not an HTML Element.',
+      'Popup ignored because the given element/bounds in the options is not an HTML Element.',
     );
     return;
   }
 
-  const { innerWidth, innerHeight } = window;
-  const { width: elWidth, height: elHeight } = scaledBoundingClientRect(element, scale);
-  const { left, top, right, bottom, width, height, centerX, centerY } = offsets(
-    parent,
-    false,
-    scale,
-  );
+  const {
+    innerWidth,
+    innerHeight,
+  } = window;
+  const {
+    width: elWidth,
+    height: elHeight,
+  } = scaledBoundingClientRect(element, scale);
+  const {
+    left,
+    top,
+    right,
+    bottom,
+    width,
+    height,
+    centerX,
+    centerY,
+  } = offsets(bounding, false, scale);
 
   const styles: CSSProperties = {};
-  let tx = '0';
-  let ty = '0';
 
   if (xDir === 'before') {
-    const offSide = right + elWidth < 0;
+    const offSide = (right + width + elWidth) > innerWidth;
 
     if (offSide) {
       if (swap) {
@@ -108,7 +121,7 @@ export function popRect(options: RectOptions) {
       element.classList.add('x-before');
     }
   } else if (xDir === 'after') {
-    const offSide = left + elWidth > innerWidth;
+    const offSide = (left + width + elWidth) > innerWidth;
 
     if (offSide) {
       if (swap) {
@@ -125,8 +138,8 @@ export function popRect(options: RectOptions) {
       element.classList.add('x-after');
     }
   } else if (xDir === 'between') {
-    const offsideLeft = centerX - elWidth / 2 < 0;
-    const offsideRight = centerX + elWidth / 2 > innerWidth;
+    const offsideLeft = (centerX - (elWidth / 2)) < 0;
+    const offsideRight = (centerX + (elWidth / 2)) > innerWidth;
 
     if (offsideLeft) {
       styles.left = `${ space }px`;
@@ -138,7 +151,7 @@ export function popRect(options: RectOptions) {
       element.classList.add('x-screen-right');
     } else {
       styles.left = `${ centerX }px`;
-      tx = '-50%';
+      styles.marginLeft = `${ -elWidth / 2 }px`;
       element.classList.add('x-between');
     }
   } else if (xDir === 'left') {
@@ -150,7 +163,7 @@ export function popRect(options: RectOptions) {
   }
 
   if (yDir === 'above') {
-    const offSide = bottom + elHeight < 0;
+    const offSide = (top - height - elHeight) < 0;
 
     if (offSide) {
       if (swap) {
@@ -167,7 +180,7 @@ export function popRect(options: RectOptions) {
       element.classList.add('y-above');
     }
   } else if (yDir === 'below') {
-    const offSide = top + elHeight > innerHeight;
+    const offSide = (top + height + elHeight) > innerHeight;
 
     if (offSide) {
       if (swap) {
@@ -185,8 +198,8 @@ export function popRect(options: RectOptions) {
       element.classList.add('y-below');
     }
   } else if (yDir === 'between') {
-    const offsideTop = centerY - elHeight / 2 < 0;
-    const offsideBottom = centerY + elHeight / 2 > innerHeight;
+    const offsideTop = (centerY - (elHeight / 2)) < 0;
+    const offsideBottom = (centerY + (elHeight / 2)) > innerHeight;
 
     if (offsideTop) {
       styles.top = `${ space }px`;
@@ -198,7 +211,7 @@ export function popRect(options: RectOptions) {
       element.classList.add('y-screen-bottom');
     } else {
       styles.top = `${ centerY }px`;
-      ty = '-50%';
+      styles.marginTop = `-${ Math.ceil(elHeight / 2) }px`;
       element.classList.add('y-between');
     }
   } else if (yDir === 'top') {
@@ -209,17 +222,17 @@ export function popRect(options: RectOptions) {
     element.classList.add('y-bottom');
   }
 
-  styles.transform = `translate3d(${ tx }, ${ ty }, 0)`;
+  // styles.transform = `translate3d(${ tx }, ${ ty }, 0)`;
   style(element, styles);
 }
 
 /**
  * Move the given element to the given slot, and apply the Popup positions.
- * @param {string|HTMLElement} slot - String as the document query selector.
+ * @param {HTMLElement} container - String as the document query selector.
  * @param {RectOptions} options - The popup options.
  * @param debounce - Delay before applying the styles.
  */
-export function popTo(slot: string | HTMLElement, options: RectOptions, debounce?: number) {
+export function popTo(container: HTMLElement, options: RectOptions, debounce?: number) {
   const { element, observe } = options;
 
   if (!element) {
@@ -237,13 +250,7 @@ export function popTo(slot: string | HTMLElement, options: RectOptions, debounce
     }
   };
 
-  const wrapper = typeof slot === 'string' ? document.querySelector(slot) : slot;
-
-  if (wrapper) {
-    wrapper.appendChild(element);
-  } else {
-    document.body.appendChild(element);
-  }
+  container.appendChild(element);
 
   apply();
 
@@ -311,7 +318,8 @@ export function restore(options: RectOptions, debounce?: number) {
  * @return {PopupInstance}
  */
 export function popup(self: HTMLElement, config: PopupOptions): PopupInstance {
-  let { action, container = 'body', overlay } = config;
+  let { action, overlay } = config;
+  let container = popupContainer(config.container);
 
   const parent = self.parentElement as HTMLElement;
   const options = { ...config.options, element: self, parent } as RectOptions;
@@ -383,7 +391,8 @@ export function popup(self: HTMLElement, config: PopupOptions): PopupInstance {
     update(cfg: PopupOptions) {
       action = cfg.action;
       overlay = cfg.overlay;
-      container = cfg.container || 'body';
+      container = popupContainer(cfg.container);
+      Object.assign(options, cfg.options, { element: self, parent });
     },
     destroy() {
       disconnect();
@@ -414,7 +423,13 @@ export function dialog(self: HTMLDialogElement, options: DialogOptions): PopupIn
     if (self instanceof HTMLDialogElement) {
       self.showModal();
     } else {
+      const elem = self as HTMLElement;
+
       appendTo(container, self);
+
+      const { width, height } = elem.getBoundingClientRect();
+      elem.style.setProperty('--offset-left', `${ width / 2 }px`);
+      elem.style.setProperty('--offset-top', `${ height / 2 }px`);
     }
 
     if (typeof cb === 'function') {
@@ -480,20 +495,20 @@ export function dialog(self: HTMLDialogElement, options: DialogOptions): PopupIn
  * @return {TooltipInstance}
  */
 export function tooltip(parent: HTMLElement, textOption: string | TooltipOptions): TooltipInstance {
-  const self = document.createElement('span');
-  const container = createPopupContainer((textOption as TooltipOptions).container);
+  const element = document.createElement('span');
+  const container = popupContainer((textOption as TooltipOptions).container);
 
-  self.setAttribute('class', 'tooltip fade-in');
-  parent.appendChild(self);
+  element.setAttribute('class', 'tooltip fade-in');
+  parent.appendChild(element);
 
   const update = (option: string | TooltipOptions) => {
     if (typeof option === 'string') {
-      self.innerText = option;
+      element.innerText = option;
     } else if (typeof option === 'object') {
-      self.innerText = option.text;
+      element.innerText = option.text;
 
       if (option.className) {
-        self.setAttribute('class', [ 'tooltip fade-in', option.className ].join(' '));
+        element.setAttribute('class', [ 'tooltip fade-in', option.className ].join(' '));
       }
     }
   };
@@ -502,16 +517,18 @@ export function tooltip(parent: HTMLElement, textOption: string | TooltipOptions
 
   const show = () => {
     popTo(container, {
-      element: self,
+      element,
       parent,
+      bounding: (textOption as TooltipOptions).bounding,
       xDir: (textOption as TooltipOptions).xDir,
       yDir: (textOption as TooltipOptions).yDir,
+      swap: true,
     });
   };
 
   const hide = () => {
     restore({
-      element: self,
+      element: element,
       parent,
     });
   };
@@ -522,7 +539,7 @@ export function tooltip(parent: HTMLElement, textOption: string | TooltipOptions
   return {
     update,
     destroy() {
-      self.remove();
+      element.remove();
       parent.removeEventListener('mouseenter', show);
       parent.removeEventListener('mouseleave', hide);
     },
@@ -569,12 +586,16 @@ function isBackdropClick(event: MouseEvent): boolean {
  * @param {string} name
  * @return {HTMLElement}
  */
-function createPopupContainer(name?: string): HTMLElement {
-  let container = document.querySelector(name ?? '.popup-container');
+function popupContainer(name?: string | HTMLElement): HTMLElement {
+  if (name instanceof HTMLElement) {
+    return name;
+  }
 
+  let container = document.querySelector(name ?? '.popup-container');
   if (!container) {
     container = document.createElement('div');
     container.classList.add('popup-container');
+    document.body.appendChild(container);
   }
 
   return container as HTMLElement;

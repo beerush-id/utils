@@ -12,6 +12,7 @@ export type InputFieldInstance = {
 };
 
 const FORM_INPUTS = [ 'input', 'textarea', 'select' ];
+const FORM_ACCESSORIES = [ 'label', '.placeholder', '.input-icon', '.input-unit', 'select', '[required]' ];
 
 export function inputfield(self: HTMLElement, options?: InputFieldOptions): InputFieldInstance {
   let input: FormInputs;
@@ -21,12 +22,25 @@ export function inputfield(self: HTMLElement, options?: InputFieldOptions): Inpu
   const update = (newOptions?: InputFieldOptions) => {
     if (input) {
       input.removeEventListener('blur', blur);
+      input.removeEventListener('focus', focus);
     }
 
     input = newOptions?.input || self.querySelector(FORM_INPUTS.join(', ')) as HTMLInputElement;
 
+    FORM_ACCESSORIES.forEach((selector) => {
+      const name = selector.replace(/[.[\]:]+/g, '');
+      const child = self.querySelector(selector);
+
+      if (child) {
+        self.classList.add(`has-${ name }`);
+      } else if (self.classList.contains(`has-${ name }`)) {
+        self.classList.remove(`has-${ name }`);
+      }
+    });
+
     if (input) {
       input.addEventListener('blur', blur);
+      input.addEventListener('focus', focus);
 
       if (typeof newOptions?.validate === 'function') {
         validate = newOptions.validate;
@@ -35,11 +49,15 @@ export function inputfield(self: HTMLElement, options?: InputFieldOptions): Inpu
       if (newOptions?.title) {
         input.title = newOptions.title;
       }
+
+      blur();
     }
   };
 
   const blur = () => {
     interacted = true;
+
+    self.classList.remove('has-focus');
 
     if (input?.value) {
       self.classList.add('has-value');
@@ -65,6 +83,10 @@ export function inputfield(self: HTMLElement, options?: InputFieldOptions): Inpu
       self.classList.remove('has-value');
       self.classList.remove('valid');
     }
+  };
+
+  const focus = () => {
+    self.classList.add('has-focus');
   };
 
   update(options);

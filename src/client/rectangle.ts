@@ -20,15 +20,15 @@ export type ScaledDOMRect = OffsetRect & {
  * Return an element size, and the distance between the bounding box of the element and the target element/viewport.
  * For example, left is the distance between element's left bounding with the parent/viewport left bounding.
  * @param {HTMLElement} element
- * @param {HTMLElement} relativeTo
+ * @param {HTMLElement | boolean} relative
  * @param scale
  * @returns {OffsetRect}
  */
-export function offsets(element: HTMLElement, relativeTo?: HTMLElement | boolean, scale = 1): OffsetRect {
-  if (relativeTo) {
-    const parent: HTMLElement = typeof relativeTo === 'boolean'
+export function offsets(element: HTMLElement, relative?: HTMLElement | boolean, scale = 1): OffsetRect {
+  if (relative) {
+    const parent: HTMLElement = typeof relative === 'boolean'
                                 ? element.parentElement as HTMLElement
-                                : relativeTo as HTMLElement;
+                                : relative as HTMLElement;
 
     if (parent && typeof parent.getBoundingClientRect === 'function') {
       const { left: eLeft, top: eTop, width, height } = scaledBoundingClientRect(element, scale);
@@ -43,7 +43,7 @@ export function offsets(element: HTMLElement, relativeTo?: HTMLElement | boolean
 
       return { width, height, left, top, right, bottom, centerX, centerY };
     } else {
-      throw new Error('Invalid relativeTo argument. Must be boolean or HTML Element!');
+      throw new Error('Relative target must be a boolean or HTML Element!');
     }
   } else {
     const { left, top, right, bottom, width, height } = scaledBoundingClientRect(element, scale);

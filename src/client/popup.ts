@@ -25,8 +25,8 @@ export type RectOptions = {
 };
 
 export type PopupOptions = {
-  action: 'hover' | 'click' | string;
   options: RectOptions;
+  action?: 'hover' | 'click' | string;
   container?: string | HTMLElement;
   overlay?: HTMLElement;
 }
@@ -223,7 +223,7 @@ export function popRect(options: RectOptions) {
   }
 
   // styles.transform = `translate3d(${ tx }, ${ ty }, 0)`;
-  style(element, styles);
+  style(element, { styles });
 }
 
 /**
@@ -327,7 +327,6 @@ export function popup(self: HTMLElement, config: PopupOptions): PopupInstance {
   const show = (e?: MouseEvent, cb?: (t: 'open' | 'close', e?: MouseEvent) => void) => {
     if (overlay) {
       overlay.addEventListener('click', hide);
-
       appendTo(container, overlay);
     }
 
@@ -349,7 +348,6 @@ export function popup(self: HTMLElement, config: PopupOptions): PopupInstance {
   const hide = (e?: MouseEvent, cb?: (t: 'open' | 'close', e?: MouseEvent) => void) => {
     if (overlay) {
       overlay.removeEventListener('click', hide);
-
       appendTo(parent, overlay);
     }
 
@@ -383,6 +381,9 @@ export function popup(self: HTMLElement, config: PopupOptions): PopupInstance {
   } else if (action === 'click') {
     parent.addEventListener('click', show);
   }
+
+  self.addEventListener('popup:show' as never, show);
+  self.addEventListener('popup:hide' as never, hide);
 
   return {
     show,
@@ -551,7 +552,7 @@ export function tooltip(parent: HTMLElement, textOption: string | TooltipOptions
  * @param {HTMLElement | string} target
  * @param {HTMLElement} element
  */
-function appendTo(target: HTMLElement | string, element: HTMLElement) {
+export function appendTo(target: HTMLElement | string, element: HTMLElement) {
   if (typeof target === 'string') {
     const wrapper = document.querySelector(target);
 

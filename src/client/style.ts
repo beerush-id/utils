@@ -21,6 +21,7 @@ export type CSSStyles = {
 
 export type StyleOptions = {
   styles: CSSProperties;
+  deltaScale?: number;
   reset?: boolean;
 };
 
@@ -29,34 +30,34 @@ export type StyleInstance = {
   destroy: () => void;
 };
 
+export const CSS_UNIT_REGEX = /(\d+)(px|pc|pt|mm|cm|in)/ig;
+export const CSS_SINGLE_UNIT_REGEX = /(\d+)(px|pc|pt|mm|cm|in)/i;
+
 /**
  * Apply CSS Style Declarations to the given element.
  * @param {HTMLElement} element - HTML Element to apply the styles to.
- * @param {CSSProperties} styles - CSS Properties.
- * @param {boolean} reset - Reset the element's style before applying the new styles.
+ * @param {StyleOptions} options - CSS Properties.
  * @returns {StyleInstance} - Style Instance.
  */
-export function style(element: HTMLElement, styles: CSSProperties, reset?: boolean): StyleInstance {
-  styleElement(element, styles, reset);
+export function style(element: HTMLElement, { styles, reset, deltaScale = 1 }: StyleOptions): StyleInstance {
+  styleElement(element, styles, reset, deltaScale);
 
   return {
-    update: (updatedStyles: CSSProperties, updatedReset?: boolean) => styleElement(
-      element,
-      updatedStyles,
-      updatedReset,
-    ),
+    update: (newOptions: StyleOptions) => {
+      styleElement(element, newOptions.styles, newOptions.reset, newOptions.deltaScale);
+    },
     destroy: () => styleElement(element, {}, true),
   };
 }
 
-function styleElement(element: HTMLElement, styles: CSSProperties, reset?: boolean) {
+function styleElement(element: HTMLElement, styles: CSSProperties, reset?: boolean, deltaScale = 1) {
   if (reset) {
     element.removeAttribute('style');
   }
 
   for (const [ key, value ] of entries(styles)) {
     if (typeof value !== 'undefined' && value !== null) {
-      const val: string = toCssUnit(key, value);
+      const val: string = toCssUnit(key, value, deltaScale);
 
       if ((key as string).includes('-')) {
         element.style.setProperty(key as string, val);
@@ -67,20 +68,31 @@ function styleElement(element: HTMLElement, styles: CSSProperties, reset?: boole
   }
 }
 
-export function toCssUnit(key: keyof CSSProperties, value: string | number): string {
-  if (typeof value === 'string') return value;
+export function toCssUnit(key: keyof CSSProperties, value: string | number, scale = 1): string {
+  if (typeof value === 'string') {
+    const values = value.match(CSS_UNIT_REGEX);
+
+    if (values) {
+      values.forEach(v => {
+        const [ , num, unit ] = v.match(CSS_SINGLE_UNIT_REGEX) as RegExpMatchArray;
+        value = (value as string).replace(v, `${ parseFloat(num) * scale }${ unit }`);
+      });
+    }
+
+    return value;
+  }
 
   const unit = UNIT_MAP.find(({ search }) => search.test(key as string));
 
   if (unit) {
-    return `${ value }${ unit.unit }`;
+    return unit.unit ? `${ value * scale }` : `${ value }${ unit.unit }`;
   }
 
   if ((value > 0 || value < 0)) {
-    return `${ value }px`;
+    return `${ value * scale }px`;
   }
 
-  return `${ value }`;
+  return `${ value * scale }`;
 }
 
 const UNIT_MAP = [

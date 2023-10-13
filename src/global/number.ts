@@ -366,6 +366,14 @@ export function pxScale(px: number, mm: number, dpi = DEFAULT_DPI): number {
   return mmInPixels / px;
 }
 
+export function dpiFromPx(px: number, mm: number): number {
+  return (px / mm) * MM_PER_INCH;
+}
+
+export function pxDrop(px: number, dpi = DEFAULT_DPI, ppi = DEFAULT_PPI): number {
+  return (px * ppi) / dpi;
+}
+
 export function relativeMmToPx(
   size: number,
   canvasSize: number,

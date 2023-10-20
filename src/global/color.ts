@@ -283,6 +283,40 @@ export function hexToRgbString(hex: HEXColor, alpha?: number): string {
   }
 }
 
+// -- HSL COLORS --
+export function hslToRgb(h: Hue, s: Saturation, l: Lightness): RGB;
+export function hslToRgb(h: Hue, s: Saturation, l: Lightness, a: Alpha): RGBA;
+export function hslToRgb(h: Hue, s: Saturation, l: Lightness, a?: Alpha): RGB | RGBA {
+  const hue = h / 360;
+  const saturation = s / 100;
+  const lightness = l / 100;
+
+  if (a) {
+    return [
+      Math.round(255 * hue),
+      Math.round(255 * saturation),
+      Math.round(255 * lightness),
+      a,
+    ] as RGBA;
+  }
+
+  return [
+    Math.round(255 * hue),
+    Math.round(255 * saturation),
+    Math.round(255 * lightness),
+  ] as RGB;
+}
+
+export function hslToHex(h: Hue, s: Saturation, l: Lightness): HEXColor {
+  const rgb = hslToRgb(h, s, l);
+  return rgbToHex(...rgb);
+}
+
+export function hslToCmyk(h: Hue, s: Saturation, l: Lightness): CMYK {
+  const rgb = hslToRgb(h, s, l);
+  return rgbToCmyk(...rgb);
+}
+
 // -- COLOR TRANSFORM --
 export function colorOpacity(color: HEXColor, opacity: string | Alpha): string {
   const alpha = parseFloat(opacity as string) as Alpha;

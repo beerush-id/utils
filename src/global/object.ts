@@ -106,6 +106,15 @@ export function replace(object: object, source: object): void {
 }
 
 /**
+ * Recursively replace the item of an array with item from another array by preserving the reference.
+ * @param {unknown[]} array - An array to put the new item into.
+ * @param {unknown[]} source - An array to pull the new item from.
+ */
+export function replaceItems(array: unknown[], source: unknown[]): void {
+  mergeItems(array, source, true);
+}
+
+/**
  * Recursively merge two objects by preserving the reference.
  * @param {object} object - An object to put the new value into.
  * @param {object} source - An object to put the new value from.

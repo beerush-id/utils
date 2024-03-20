@@ -61,7 +61,7 @@
   "author": "Nanang Mahdaen El Agung <mahdaen@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "@beerush/esdev": "*",
+    "@beerush/esdev": "^1.1.0",
     "@types/jest": "^29.4.0",
     "typedoc": "^0.24.8",
     "typescript": "^5.1.6",

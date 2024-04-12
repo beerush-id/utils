@@ -64,7 +64,7 @@ web_modules/
 # Optional REPL history
 .node_repl_history
 
-# Output of 'npm pack.js'
+# Output of 'npm pack'
 *.tgz
 
 # Yarn Integrity file
@@ -123,5 +123,5 @@ tsconfig.json
 docs
 test
 .eslintrc.json
-jest.config.mjs
+jest.config.js
 .eslintrc

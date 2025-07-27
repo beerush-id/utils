@@ -6,26 +6,26 @@ export type HotkeyOptions = {
   preventDefault?: boolean;
   stopPropagation?: boolean;
   once?: boolean;
-}
+};
 
 export type HotkeyInstance = {
   update: (options: HotkeyOptions) => void;
   destroy: () => void;
-}
+};
 
-export function registerHotkey(
+export function createHotkey(
   keys: string[],
   target: HTMLElement,
   handler: (e: KeyboardEvent) => void,
   preventDefault?: boolean,
   stopPropagation?: boolean,
+  strict?: boolean
 ): HotkeyInstance {
   const keyup = (e: KeyboardEvent) => {
-    if (e.target !== target) {
-      return;
-    }
+    if (strict && e.target !== target) return;
+    if (!target.contains(e.target as Node)) return;
 
-    const modifiers = [ ...keys ];
+    const modifiers = [...keys];
     const primary = modifiers.pop();
 
     if (primary !== e.key) {
@@ -33,7 +33,7 @@ export function registerHotkey(
     }
 
     for (const modifier of modifiers) {
-      if (!e[`${ modifier as never }Key`]) {
+      if (!e[`${modifier as never}Key`]) {
         return;
       }
     }
@@ -50,7 +50,7 @@ export function registerHotkey(
   };
 
   window.addEventListener('keydown', keyup);
-  logger.debug(`[use:hotkey] Hotkey registered: ${ keys.join(' + ') }.`);
+  logger.debug(`[use:hotkey] Hotkey registered: ${keys.join(' + ')}.`);
 
   return {
     update: (options: HotkeyOptions) => {
@@ -60,12 +60,12 @@ export function registerHotkey(
       stopPropagation = options.stopPropagation || stopPropagation;
     },
     destroy: () => {
-      logger.debug(`[use:hotkey] Hotkey unregistered ${ keys.join(' + ') }.`);
+      logger.debug(`[use:hotkey] Hotkey unregistered ${keys.join(' + ')}.`);
       window.removeEventListener('keydown', keyup);
     },
   };
 }
 
 export function hotkey(target: HTMLElement, options: HotkeyOptions) {
-  return registerHotkey(options.keys, target, options.handler, options.preventDefault, options.stopPropagation);
+  return createHotkey(options.keys, target, options.handler, options.preventDefault, options.stopPropagation, true);
 }

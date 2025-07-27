@@ -2,45 +2,43 @@
   "name": "@beerush/utils",
   "version": "0.4.0",
   "description": "Beerush Utilities",
-  "main": "lib/cjs/index.js",
-  "module": "lib/esm/index.js",
-  "typings": "lib/esm/index.d.ts",
+  "main": "lib/index.cjs",
+  "module": "lib/index.js",
+  "typings": "lib/index.d.ts",
   "exports": {
     ".": {
-      "types": "./lib/esm/index.d.ts",
-      "import": "./lib/esm/index.js",
-      "require": "./lib/cjs/index.cjs"
+      "types": {
+        "import": "./lib/index.d.ts",
+        "require": "./lib/index.d.cts"
+      },
+      "import": "./lib/index.js",
+      "require": "./lib/index.cjs"
     },
     "./client": {
-      "types": "./lib/esm/client/index.d.ts",
-      "import": "./lib/esm/client/index.js",
-      "require": "./lib/cjs/client/index.cjs"
-    },
-    "./client/*": {
-      "types": "./lib/esm/client/*",
-      "import": "./lib/esm/client/*",
-      "require": "./lib/cjs/client/*"
+      "types": {
+        "import": "./lib/client/index.d.ts",
+        "require": "./lib/client/index.d.cts"
+      },
+      "import": "./lib/client/index.js",
+      "require": "./lib/client/index.cjs"
     },
     "./global": {
-      "types": "./lib/esm/global/index.d.ts",
-      "import": "./lib/esm/global/index.js",
-      "require": "./lib/cjs/global/index.cjs"
-    },
-    "./global/*": {
-      "types": "./lib/esm/global/*",
-      "import": "./lib/esm/global/*",
-      "require": "./lib/cjs/global/*"
+      "types": {
+        "import": "./lib/global/index.d.ts",
+        "require": "./lib/global/index.d.cts"
+      },
+      "import": "./lib/global/index.js",
+      "require": "./lib/global/index.cjs"
     },
     "./server": {
-      "types": "./lib/esm/server/index.d.ts",
-      "import": "./lib/esm/server/index.js",
-      "require": "./lib/cjs/server/index.cjs"
+      "types": {
+        "import": "./lib/server/index.d.ts",
+        "require": "./lib/server/index.d.cts"
+      },
+      "import": "./lib/server/index.js",
+      "require": "./lib/server/index.cjs"
     },
-    "./server/*": {
-      "types": "./lib/esm/server/*",
-      "import": "./lib/esm/server/*",
-      "require": "./lib/cjs/server/*"
-    }
+    "./package.json": "./package.json"
   },
   "directories": {
     "lib": "lib"
@@ -52,24 +50,32 @@
     "access": "public"
   },
   "scripts": {
-    "dev": "esdev --watch",
-    "build": "esdev --clean",
-    "prepublish": "npm run build",
+    "dev": "rimraf lib && tsup --watch",
+    "clean": "rimraf lib",
+    "build": "rimraf lib && tsup && publint",
+    "prepublish": "rimraf lib && tsup && publint",
     "docs": "typedoc",
-    "test": "vitest"
+    "test": "vitest --run"
   },
   "author": "Nanang Mahdaen El Agung <mahdaen@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "@beerush/esdev": "^1.1.0",
-    "@typescript-eslint/eslint-plugin": "^7.6.0",
-    "@typescript-eslint/parser": "^7.6.0",
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^9.1.0",
-    "prettier": "^3.2.5",
+    "@eslint/css": "^0.5.0",
+    "@eslint/js": "^9.23.0",
+    "@eslint/markdown": "^6.3.0",
+    "esbuild-raw-plugin": "^0.2.0",
+    "eslint": "^9.23.0",
+    "eslint-plugin-prettier": "^5.2.3",
+    "prettier": "^3.5.3",
+    "publint": "^0.3.9",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.4.0",
+    "typescript-eslint": "^8.27.0",
     "typedoc": "^0.24.8",
-    "typescript": "^5.4.5",
     "vitest": "^1.5.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.8.2"
   },
   "repository": {
     "type": "git",
@@ -86,6 +92,5 @@
   "engines": {
     "node": ">=16.0.0"
   },
-  "type": "module",
-  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
+  "type": "module"
 }

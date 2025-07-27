@@ -5,7 +5,7 @@ import {
   isNumberString,
   isObject,
   isString,
-  isUnitString
+  isUnitString,
 } from './inspector.js';
 
 /**
@@ -37,11 +37,18 @@ export function extract(value: unknown) {
  */
 export function unit(value: string) {
   if (isUnitString(value)) {
+    const numericValue = parseFloat(value);
+    // Use regex to extract the unit part correctly
+    const unitMatch = value.match(/^[-+]?(?:\d+\.?\d*|\.\d+)(.*)$/);
+    const unitPart = unitMatch ? unitMatch[1] : '';
+    
     return {
-      value: parseFloat(value),
-      unit: value.replace(`${ parseFloat(value) }`, '')
+      value: numericValue,
+      unit: unitPart,
     };
   }
+
+  return undefined;
 }
 
 /**
@@ -49,9 +56,9 @@ export function unit(value: string) {
  * @param target - Object to convert.
  */
 export function typify<T extends object>(target: T): T {
-  for (const [ key, value ] of Object.entries(target)) {
+  for (const [key, value] of Object.entries(target)) {
     if (isObject(value)) {
-      target[key as keyof T] = typify(value);
+      target[key as keyof T] = typify(value) as never;
     } else if (isArray(value)) {
       target[key as keyof T] = typifyItem(value) as T[keyof T];
     } else if (isString(value)) {
@@ -87,11 +94,11 @@ export function typifyItem<T>(items: T[]): T[] {
  * @param target - Object to replace.
  */
 export function nullify<T extends object>(target: T): T {
-  for (const [ key, value ] of Object.entries(target)) {
+  for (const [key, value] of Object.entries(target)) {
     if (isObject(value)) {
-      target[key as keyof T] = nullify(value);
+      target[key as keyof T] = nullify(value) as never;
     } else if (isArray(value)) {
-      target[key as keyof T] = nullifyItems<T[keyof T]>(value) as T[keyof T];
+      target[key as keyof T] = nullifyItems<T[keyof T]>(value as never) as T[keyof T];
     } else if (typeof value === 'undefined' || isNaN(value)) {
       target[key as keyof T] = null as T[keyof T];
     }

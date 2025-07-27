@@ -24,10 +24,33 @@ export type SnakeCase<T, A extends string = ''> = T extends `${ infer F }${ infe
  * @return {CamelCase<T>}
  */
 export function toCamelCase<T extends string>(text: T): CamelCase<T> {
-  return text.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function (match, index) {
-    if (+match === 0) return '';
-    return index === 0 ? match.toLowerCase() : match.toUpperCase();
-  }).replace(/[_-]/g, '') as never;
+  if (!text) return '' as CamelCase<T>;
+  
+  // Split on various separators while preserving letter case for now
+  const words = text
+    .split(/[-_\s]+/g) // Split on separators first
+    .filter(word => word.length > 0); // Remove empty words
+  
+  if (words.length === 0) return '' as CamelCase<T>;
+  
+  // Process each word to handle camelCase boundaries
+  const processedWords = words.map(word => {
+    // Split camelCase boundaries: HelloWorld -> Hello World
+    return word.replace(/([a-z])([A-Z])/g, '$1 $2')
+               .split(' ')
+               .filter(part => part.length > 0);
+  }).flat();
+  
+  // First word lowercase, rest capitalize first letter
+  return processedWords
+    .map((word, index) => {
+      const lowerWord = word.toLowerCase();
+      if (index === 0) {
+        return lowerWord;
+      }
+      return lowerWord.charAt(0).toUpperCase() + lowerWord.substring(1);
+    })
+    .join('') as CamelCase<T>;
 }
 
 /**
@@ -36,7 +59,19 @@ export function toCamelCase<T extends string>(text: T): CamelCase<T> {
  * @return {KebabCase<T>}
  */
 export function toKebabCase<T extends string>(text: T): KebabCase<T> {
-  return text.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase() as KebabCase<T>;
+  if (!text) return '' as KebabCase<T>;
+  
+  const result = text
+    // Insert a space between lower case and upper case letters
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    // Replace separators with spaces
+    .replace(/[-_\s]+/g, ' ')
+    .trim()
+    // Replace spaces with hyphens and convert to lowercase
+    .replace(/\s+/g, '-')
+    .toLowerCase();
+    
+  return result as KebabCase<T>;
 }
 
 /**
@@ -45,9 +80,30 @@ export function toKebabCase<T extends string>(text: T): KebabCase<T> {
  * @return {PascalCase<T>}
  */
 export function toPascalCase<T extends string>(text: T): PascalCase<T> {
-  return text.replace(/(\w)(\w*)/g, function (g0, g1, g2) {
-    return g1.toUpperCase() + g2.toLowerCase();
-  }) as PascalCase<T>;
+  if (!text) return '' as PascalCase<T>;
+  
+  // Split on various separators while preserving letter case for now
+  const words = text
+    .split(/[-_\s]+/g) // Split on separators first
+    .filter(word => word.length > 0); // Remove empty words
+  
+  if (words.length === 0) return '' as PascalCase<T>;
+  
+  // Process each word to handle camelCase boundaries
+  const processedWords = words.map(word => {
+    // Split camelCase boundaries: HelloWorld -> Hello World
+    return word.replace(/([a-z])([A-Z])/g, '$1 $2')
+               .split(' ')
+               .filter(part => part.length > 0);
+  }).flat();
+  
+  // Capitalize first letter of each word
+  return processedWords
+    .map(word => {
+      const lowerWord = word.toLowerCase();
+      return lowerWord.charAt(0).toUpperCase() + lowerWord.substring(1);
+    })
+    .join('') as PascalCase<T>;
 }
 
 /**
@@ -56,7 +112,19 @@ export function toPascalCase<T extends string>(text: T): PascalCase<T> {
  * @return {SnakeCase<T>}
  */
 export function toSnakeCase<T extends string>(text: T): SnakeCase<T> {
-  return text.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase() as SnakeCase<T>;
+  if (!text) return '' as SnakeCase<T>;
+  
+  const result = text
+    // Insert a space between lower case and upper case letters
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    // Replace separators with spaces
+    .replace(/[-_\s]+/g, ' ')
+    .trim()
+    // Replace spaces with underscores and convert to lowercase
+    .replace(/\s+/g, '_')
+    .toLowerCase();
+    
+  return result as SnakeCase<T>;
 }
 
 /**
@@ -65,7 +133,10 @@ export function toSnakeCase<T extends string>(text: T): SnakeCase<T> {
  * @returns {string}
  */
 export function capitalize<T extends string>(text: T): Capitalize<T> {
-  return text.replace(/\w+/g, m => m.replace(/^[a-z]/, c => c.toUpperCase())) as never;
+  if (!text) return '' as Capitalize<T>;
+  return text.replace(/\w+/g, word => {
+    return word.charAt(0).toUpperCase() + word.substring(1).toLowerCase();
+  }) as Capitalize<T>;
 }
 
 /**
@@ -85,7 +156,9 @@ export function humanize(text: string, capital?: boolean): string {
  * @returns {string}
  */
 export function dashify(text: string): string {
-  return text.replace(/[A-Z]/g, m => `-${ m.toLowerCase() }`);
+  return text.replace(/([A-Z])/g, (match, p1, offset) => {
+    return (offset > 0 ? '-' : '') + p1.toLowerCase();
+  });
 }
 
 export const dash = dashify;
@@ -96,7 +169,7 @@ export const dash = dashify;
  * @returns {string}
  */
 export function makePath(path: string): string {
-  const allowed = path.replace(/\s+/g, '-').match(/[\w\-_./:]+/g) || [];
+  const allowed = path.replace(/\s+/g, '-').replace(/_+/g, '-').match(/[\w\-_./:]+/g) || [];
   return cleanPath(allowed.join('').toLowerCase());
 }
 
@@ -106,7 +179,12 @@ export function makePath(path: string): string {
  * @returns {string}
  */
 export function cleanPath(path: string): string {
-  return path.replace(/\/+/g, '/').replace(/\/$/, '');
+  // Handle special cases
+  if (path === '/') return path;
+  if (path === '//') return '/';
+  
+  const cleaned = path.replace(/\/+/g, '/');
+  return cleaned === '/' ? cleaned : cleaned.replace(/\/$/, '');
 }
 
 /**

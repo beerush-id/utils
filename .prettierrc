@@ -9,10 +9,6 @@
   "trailingComma": "es5",
   "arrowParens": "always",
   "printWidth": 120,
-  "pluginSearchDirs": ["."],
-  "svelteSortOrder": "options-scripts-styles-markup",
   "singleAttributePerLine": false,
-  "svelteAllowShorthand": true,
-  "svelteIndentScriptAndStyle": true,
   "htmlWhitespaceSensitivity": "ignore"
 }

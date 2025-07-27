@@ -1,4 +1,4 @@
-import { isArray, isObject, typeOf } from './inspector.js';
+import { isArray, isFunction, isObject, typeOf } from './inspector.js';
 
 export type NestedPath<T, K extends keyof T = keyof T> = K extends string | number
   ? T[K] extends infer R
@@ -151,6 +151,11 @@ export function remove<T extends object, P extends NestedPath<T> = NestedPath<T>
  * @returns {T}
  */
 export function clone<T>(source: T): T {
+  // Handle null, undefined, and primitive types
+  if (source === null || typeof source !== 'object') {
+    return source;
+  }
+
   if (source instanceof Map) {
     return cloneMap(source) as T;
   }
@@ -163,21 +168,26 @@ export function clone<T>(source: T): T {
     return new Date(source) as T;
   }
 
-  if (isObject(source)) {
-    return source;
+  // Handle arrays
+  if (Array.isArray(source)) {
+    const copy: unknown[] = [];
+    for (let i = 0; i < source.length; i++) {
+      copy[i] = clone(source[i]);
+    }
+    return copy as T;
   }
 
-  const copy = Array.isArray(source) ? [] : {};
+  // Handle plain objects
+  const copy: Record<string, unknown> = {};
 
   for (const key in source) {
     // eslint-disable-next-line no-prototype-builtins
     if ((source as object).hasOwnProperty(key)) {
-      const value = source[key as never];
-      copy[key as never] = clone(value);
+      copy[key] = clone(source[key as never]);
     }
   }
 
-  return copy as never;
+  return copy as T;
 }
 
 /**
@@ -298,7 +308,11 @@ export function mergeItems(target: unknown[], source: unknown[], cleanup?: boole
  * @param maxRows - The max rows per column.
  */
 export function splitItems<T>(array: T[], maxRows: number): Array<T[]> {
-  if (array.length <= maxRows) {
+  if (array.length === 0) {
+    return [];
+  }
+  
+  if (maxRows <= 0 || array.length <= maxRows) {
     return [array];
   }
 
@@ -328,31 +342,27 @@ export function splitItems<T>(array: T[], maxRows: number): Array<T[]> {
  * @returns {string}
  */
 export function stringify(object: unknown): string {
-  const text: string[] = [];
-
   if (isObject(object)) {
-    text.push('{');
-
+    const parts: string[] = [];
+    
     for (const [key, value] of Object.entries(object as object)) {
-      text.push(key, ':', stringify(value) as never, ',');
+      parts.push(`${JSON.stringify(key)}:${stringify(value)}`);
     }
-
-    text.push('}');
-  } else if (Array.isArray(object)) {
-    text.push('[');
-
+    
+    return `{${parts.join(',')}}`;
+  } else if (isArray(object)) {
+    const parts: string[] = [];
+    
     for (const item of object) {
-      text.push(stringify(item), ',');
+      parts.push(stringify(item));
     }
-
-    text.push(']');
-  } else if (typeof object === 'function') {
-    text.push(object.toString());
+    
+    return `[${parts.join(',')}]`;
+  } else if (isFunction(object)) {
+    return object.toString();
   } else {
-    text.push(JSON.stringify(object));
+    return JSON.stringify(object);
   }
-
-  return text.join('');
 }
 
 /**
@@ -375,18 +385,20 @@ export function nestedPaths<T extends object, R = NestedPaths<T>>(target: T, pre
 
   if (Array.isArray(target)) {
     target.forEach((value, i) => {
-      paths.push(`${prefix ? prefix + '.' : ''}${i}` as never);
+      const key = prefix ? `${prefix}.${i}` : `${i}`;
+      paths.push(key as never);
 
       if (isObject(value) || isArray(value)) {
-        paths.push(...nestedPaths(value as object, `${i}`));
+        paths.push(...nestedPaths(value as object, key));
       }
     });
   } else if (isObject(target)) {
     for (const [key, value] of Object.entries(target)) {
-      paths.push(`${prefix ? prefix + '.' : ''}${key}` as never);
+      const path = prefix ? `${prefix}.${key}` : key;
+      paths.push(path as never);
 
       if (isObject(value) || isArray(value)) {
-        paths.push(...nestedPaths(value as object, key));
+        paths.push(...nestedPaths(value as object, path));
       }
     }
   }
@@ -411,7 +423,7 @@ export function nestedPathMaps<T extends object>(
   if (Array.isArray(target)) {
     target.forEach((value, i) => {
       const key = `${prefix ? prefix + '.' : ''}${i}` as never;
-      maps[key] = typeof replace === 'function' ? (replace(key, value) as never) : (i as never);
+      maps[key] = typeof replace === 'function' ? (replace(key as never, value as never) as never) : (value as never);
 
       if (isObject(value) || isArray(value)) {
         Object.assign(maps, nestedPathMaps(value as T, replace, key));
@@ -420,7 +432,7 @@ export function nestedPathMaps<T extends object>(
   } else if (isObject(target)) {
     for (const [prop, value] of Object.entries(target)) {
       const key = `${prefix ? prefix + '.' : ''}${prop}` as never;
-      maps[key] = typeof replace === 'function' ? (replace(key, value) as never) : (value as never);
+      maps[key] = typeof replace === 'function' ? (replace(key as never, value as never) as never) : (value as never);
 
       if (isObject(value) || isArray(value)) {
         Object.assign(maps, nestedPathMaps(value as T, replace, key));

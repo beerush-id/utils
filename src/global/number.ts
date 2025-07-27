@@ -1,14 +1,14 @@
 type Enumerate<N extends number, Acc extends number[] = []> = Acc['length'] extends N
-                                                              ? Acc[number]
-                                                              : Enumerate<N, [ ...Acc, Acc['length'] ]>
+  ? Acc[number]
+  : Enumerate<N, [...Acc, Acc['length']]>;
 
-export type Range<F extends number, T extends number> = Exclude<Enumerate<T>, Enumerate<F>>
+export type Range<F extends number, T extends number> = Exclude<Enumerate<T>, Enumerate<F>>;
 export type Unit = 'px' | 'mm' | 'cm' | 'in';
 export type UnitMap = {
   [key in Unit]: {
     name: string;
     label: string;
-  }
+  };
 };
 
 export const DEFAULT_UNIT: Unit = 'mm';
@@ -36,18 +36,6 @@ export const DEFAULT_DECIMALS = 2;
 export const CM_PER_INCH = 2.54;
 export const MM_PER_INCH = 25.4;
 
-export function isEven(n: number): boolean {
-  return (n % 2) === 0;
-}
-
-export function isInt(n: number) {
-  return Number(n) === n && n % 1 === 0;
-}
-
-export function isFloat(n: number) {
-  return Number(n) === n && n % 1 !== 0;
-}
-
 export type RulerValue = {
   mm: number;
   mms: string;
@@ -58,7 +46,7 @@ export type RulerValue = {
   in: number;
   ins: string;
   at: (ddpi?: number) => RulerValue;
-}
+};
 
 export function rule(n: number | string, unit: Unit, dpi = DEFAULT_PPI, scale = 1): RulerValue {
   if (typeof n === 'string') {
@@ -69,28 +57,28 @@ export function rule(n: number | string, unit: Unit, dpi = DEFAULT_PPI, scale = 
 
   return {
     get mm() {
-      return unit === 'mm' ? n as number : toFixed(pxToMm(value * scale, dpi), DEFAULT_DECIMALS);
+      return unit === 'mm' ? (n as number) : toFixed(pxToMm(value * scale, dpi), DEFAULT_DECIMALS);
     },
     get mms() {
-      return `${ unit === 'mm' ? n : toFixed(pxToMm(value * scale, dpi), DEFAULT_DECIMALS) }mm`;
+      return `${unit === 'mm' ? n : toFixed(pxToMm(value * scale, dpi), DEFAULT_DECIMALS)}mm`;
     },
     get cm() {
-      return unit === 'cm' ? n as number : toFixed(pxToCm(value * scale, dpi), DEFAULT_DECIMALS);
+      return unit === 'cm' ? (n as number) : toFixed(pxToCm(value * scale, dpi), DEFAULT_DECIMALS);
     },
     get cms() {
-      return `${ unit === 'cm' ? n : toFixed(pxToCm(value * scale, dpi), DEFAULT_DECIMALS) }cm`;
+      return `${unit === 'cm' ? n : toFixed(pxToCm(value * scale, dpi), DEFAULT_DECIMALS)}cm`;
     },
     get in() {
-      return unit === 'in' ? n as number : toFixed(pxToInch(value * scale, dpi), DEFAULT_DECIMALS);
+      return unit === 'in' ? (n as number) : toFixed(pxToInch(value * scale, dpi), DEFAULT_DECIMALS);
     },
     get ins() {
-      return `${ unit === 'in' ? n : toFixed(pxToInch(value * scale, dpi), DEFAULT_DECIMALS) }in`;
+      return `${unit === 'in' ? n : toFixed(pxToInch(value * scale, dpi), DEFAULT_DECIMALS)}in`;
     },
     get px() {
-      return unit === 'px' ? n as number : toFixed(value * scale, DEFAULT_DECIMALS);
+      return unit === 'px' ? (n as number) : toFixed(value * scale, DEFAULT_DECIMALS);
     },
     get pxs() {
-      return `${ unit === 'px' ? n : toFixed(value * scale, DEFAULT_DECIMALS) }px`;
+      return `${unit === 'px' ? n : toFixed(value * scale, DEFAULT_DECIMALS)}px`;
     },
     at(ppi = DEFAULT_PPI) {
       return rule(n, unit, ppi, scale);
@@ -107,7 +95,7 @@ export type Ruler = {
   dpi: number;
   unit: Unit;
   scale: number;
-}
+};
 
 export function createRuler(unit: Unit = 'px', ppi = DEFAULT_PPI, scale = 1): Ruler {
   return {
@@ -172,7 +160,7 @@ function toPixel<T>(obj: T, unit: Unit = 'mm', dpi = DEFAULT_DPI, scale = 1) {
     return rule(calc(obj, scale), unit, dpi).px;
   } else if (typeof obj === 'function') {
     return (...args: unknown[]) => {
-      return obj(...args.map(item => toPixel(item, unit, dpi, scale)));
+      return obj(...args.map((item) => toPixel(item, unit, dpi, scale)));
     };
   } else if (typeof obj === 'object') {
     return new Proxy(obj as never, {
@@ -183,7 +171,7 @@ function toPixel<T>(obj: T, unit: Unit = 'mm', dpi = DEFAULT_DPI, scale = 1) {
           return rule(calc(value, scale), unit, dpi).px;
         } else if (typeof value === 'function') {
           return (...args: unknown[]) => {
-            const result = value.bind(target)(...args.map(item => toPixel(item, unit, dpi, scale)));
+            const result = value.bind(target)(...args.map((item) => toPixel(item, unit, dpi, scale)));
             return fromPixel(result, unit, dpi, scale);
           };
         }
@@ -206,7 +194,7 @@ function fromPixel<T>(obj: T, unit: Unit = 'mm', dpi = DEFAULT_DPI, scale = 1): 
     return (rule(calc(obj, scale), 'px', dpi)[unit] || obj) as never;
   } else if (typeof obj === 'function') {
     return ((...args: unknown[]) => {
-      const result = obj(...args.map(item => fromPixel(item, unit, dpi, scale)));
+      const result = obj(...args.map((item) => fromPixel(item, unit, dpi, scale)));
       return toPixel(result, unit, dpi, scale);
     }) as never;
   } else if (typeof obj === 'object') {
@@ -218,7 +206,7 @@ function fromPixel<T>(obj: T, unit: Unit = 'mm', dpi = DEFAULT_DPI, scale = 1): 
           return rule(calc(value, scale), unit, dpi).px;
         } else if (typeof value === 'function') {
           return (...args: unknown[]) => {
-            const result = value.bind(target)(...args.map(item => fromPixel(item, unit, dpi, scale)));
+            const result = value.bind(target)(...args.map((item) => fromPixel(item, unit, dpi, scale)));
             return toPixel(result, unit, dpi, scale);
           };
         }
@@ -237,18 +225,14 @@ function fromPixel<T>(obj: T, unit: Unit = 'mm', dpi = DEFAULT_DPI, scale = 1): 
 }
 
 function calc(n: number, scale = 1) {
-  return scale < 0 ? (n / Math.abs(scale)) : (n * scale);
+  return scale < 0 ? n / Math.abs(scale) : n * scale;
 }
 
 export function toFixed(value: number): number;
 export function toFixed(value: number, decimal?: number): number;
 export function toFixed(value: number, decimal?: number, textMode?: boolean): string;
 export function toFixed(value: number, decimal?: number, textMode?: boolean) {
-  return decimal
-         ? textMode
-           ? value.toFixed(decimal)
-           : parseFloat(value.toFixed(decimal))
-         : value;
+  return decimal ? (textMode ? value.toFixed(decimal) : parseFloat(value.toFixed(decimal))) : value;
 }
 
 /**
@@ -362,6 +346,7 @@ export function pxToInch(px: number, dpi = DEFAULT_DPI): number {
 }
 
 export function pxScale(px: number, mm: number, dpi = DEFAULT_DPI): number {
+  if (px === 0 || mm === 0) return 0;
   const mmInPixels = mmToPx(mm, dpi);
   return mmInPixels / px;
 }
@@ -374,23 +359,13 @@ export function pxDrop(px: number, dpi = DEFAULT_DPI, ppi = DEFAULT_PPI): number
   return (px * ppi) / dpi;
 }
 
-export function relativeMmToPx(
-  size: number,
-  canvasSize: number,
-  displaySize: number,
-  dpi = DEFAULT_DPI,
-): number {
+export function relativeMmToPx(size: number, canvasSize: number, displaySize: number, dpi = DEFAULT_DPI): number {
   const sizeInPixels = mmToPx(size, dpi);
   const scale = pxScale(displaySize, canvasSize, dpi);
-  return (sizeInPixels / scale);
+  return sizeInPixels / scale;
 }
 
-export function pxDisplayScale(
-  size: number,
-  canvasSize: number,
-  displaySize: number,
-  dpi = DEFAULT_DPI,
-): number {
+export function pxDisplayScale(size: number, canvasSize: number, displaySize: number, dpi = DEFAULT_DPI): number {
   const px = relativeMmToPx(size, canvasSize, displaySize, dpi);
   return (px / displaySize) * 100;
 }
@@ -399,8 +374,8 @@ export function relScaleOf(size: number, baseSize: number): number {
   return (size / baseSize) * 100;
 }
 
-export function aspectRatio(width: number, height: number): [ number, number ] {
+export function aspectRatio(width: number, height: number): [number, number] {
   const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
   const divisor = gcd(width, height);
-  return [ width / divisor, height / divisor ];
+  return [width / divisor, height / divisor];
 }

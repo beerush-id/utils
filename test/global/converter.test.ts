@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extract, isDate } from '../lib/esm';
+import { extract, isDate } from '../../lib/index.js';
 
 describe('Extract', function () {
   it('should preserve true as true', function () {

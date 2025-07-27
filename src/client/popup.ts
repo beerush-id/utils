@@ -1,5 +1,5 @@
 import { offsets, scaledBoundingClientRect } from './rectangle.js';
-import { CSSProperties, style } from './style.js';
+import { type CSSProperties, style } from './style.js';
 
 export type DirectionX = 'before' | 'after' | 'between' | 'left' | 'right';
 export type DirectionY = 'above' | 'below' | 'between' | 'top' | 'bottom';
@@ -29,12 +29,12 @@ export type PopupOptions = {
   action?: 'hover' | 'click' | string;
   container?: string | HTMLElement;
   overlay?: HTMLElement;
-}
+};
 
 export type DialogOptions = {
   container?: string;
   overlay?: HTMLElement;
-}
+};
 
 export type PopupInstance = {
   show: (e?: MouseEvent, cb?: (t: 'open' | 'close', e?: MouseEvent) => void) => void;
@@ -51,12 +51,12 @@ export type TooltipOptions = {
   yDir?: DirectionY;
   container?: string;
   bounding?: HTMLElement;
-}
+};
 
 export type TooltipInstance = {
   update: (option: string | TooltipOptions) => void;
   destroy: () => void;
-}
+};
 
 const OBSERVERS = new WeakMap<HTMLElement, ResizeObserver>();
 
@@ -76,149 +76,132 @@ export function popRect(options: RectOptions) {
     space = 8,
   } = options;
   if (!element || !bounding) {
-    console.warn(
-      'Popup ignored because the given element/bounds in the options is not an HTML Element.',
-    );
+    console.warn('Popup ignored because the given element/bounds in the options is not an HTML Element.');
     return;
   }
 
-  const {
-    innerWidth,
-    innerHeight,
-  } = window;
-  const {
-    width: elWidth,
-    height: elHeight,
-  } = scaledBoundingClientRect(element, scale);
-  const {
-    left,
-    top,
-    right,
-    bottom,
-    width,
-    height,
-    centerX,
-    centerY,
-  } = offsets(bounding, false, scale);
+  const { innerWidth, innerHeight } = window;
+  const { width: elWidth, height: elHeight } = scaledBoundingClientRect(element, scale);
+  const { left, top, right, bottom, width, height, centerX, centerY } = offsets(bounding, false, scale);
 
   const styles: CSSProperties = {};
 
   if (xDir === 'before') {
-    const offSide = (right + width + elWidth) > innerWidth;
+    const offSide = right + width + elWidth > innerWidth;
 
     if (offSide) {
       if (swap) {
-        styles.left = `${ left + width }px`;
+        styles.left = `${left + width}px`;
       } else {
         styles.left = '0';
       }
 
-      styles.marginLeft = `${ space }px`;
+      styles.marginLeft = `${space}px`;
       element.classList.add('x-after');
     } else {
-      styles.right = `${ right + width }px`;
-      styles.marginRight = `${ space }px`;
+      styles.right = `${right + width}px`;
+      styles.marginRight = `${space}px`;
       element.classList.add('x-before');
     }
   } else if (xDir === 'after') {
-    const offSide = (left + width + elWidth) > innerWidth;
+    const offSide = left + width + elWidth > innerWidth;
 
     if (offSide) {
       if (swap) {
-        styles.right = `${ right + width }px`;
+        styles.right = `${right + width}px`;
       } else {
         styles.right = '0';
       }
 
-      styles.marginRight = `${ space }px`;
+      styles.marginRight = `${space}px`;
       element.classList.add('x-before');
     } else {
-      styles.left = `${ left + width }px`;
-      styles.marginLeft = `${ space }px`;
+      styles.left = `${left + width}px`;
+      styles.marginLeft = `${space}px`;
       element.classList.add('x-after');
     }
   } else if (xDir === 'between') {
-    const offsideLeft = (centerX - (elWidth / 2)) < 0;
-    const offsideRight = (centerX + (elWidth / 2)) > innerWidth;
+    const offsideLeft = centerX - elWidth / 2 < 0;
+    const offsideRight = centerX + elWidth / 2 > innerWidth;
 
     if (offsideLeft) {
-      styles.left = `${ space }px`;
-      styles.maxWidth = `${ innerWidth - space * 2 }px`;
+      styles.left = `${space}px`;
+      styles.maxWidth = `${innerWidth - space * 2}px`;
       element.classList.add('x-screen-left');
     } else if (offsideRight) {
-      styles.right = `${ space }px`;
-      styles.maxWidth = `${ innerWidth - space * 2 }px`;
+      styles.right = `${space}px`;
+      styles.maxWidth = `${innerWidth - space * 2}px`;
       element.classList.add('x-screen-right');
     } else {
-      styles.left = `${ centerX }px`;
-      styles.marginLeft = `${ -elWidth / 2 }px`;
+      styles.left = `${centerX}px`;
+      styles.marginLeft = `${-elWidth / 2}px`;
       element.classList.add('x-between');
     }
   } else if (xDir === 'left') {
-    styles.left = `${ left }px`;
+    styles.left = `${left}px`;
     element.classList.add('x-left');
   } else if (xDir === 'right') {
-    styles.right = `${ right }px`;
+    styles.right = `${right}px`;
     element.classList.add('x-right');
   }
 
   if (yDir === 'above') {
-    const offSide = (top - height - elHeight) < 0;
+    const offSide = top - height - elHeight < 0;
 
     if (offSide) {
       if (swap) {
-        styles.top = `${ top + height }px`;
+        styles.top = `${top + height}px`;
       } else {
         styles.top = '0';
       }
 
-      styles.marginTop = `${ space }px`;
+      styles.marginTop = `${space}px`;
       element.classList.add('y-below');
     } else {
-      styles.bottom = `${ bottom + height }px`;
-      styles.marginBottom = `${ space }px`;
+      styles.bottom = `${bottom + height}px`;
+      styles.marginBottom = `${space}px`;
       element.classList.add('y-above');
     }
   } else if (yDir === 'below') {
-    const offSide = (top + height + elHeight) > innerHeight;
+    const offSide = top + height + elHeight > innerHeight;
 
     if (offSide) {
       if (swap) {
-        styles.bottom = `${ bottom + height }px`;
+        styles.bottom = `${bottom + height}px`;
         element.classList.add('y-below');
       } else {
         styles.bottom = '0';
       }
 
-      styles.marginBottom = `${ space }px`;
+      styles.marginBottom = `${space}px`;
       element.classList.add('y-above');
     } else {
-      styles.top = `${ top + height }px`;
-      styles.marginTop = `${ space }px`;
+      styles.top = `${top + height}px`;
+      styles.marginTop = `${space}px`;
       element.classList.add('y-below');
     }
   } else if (yDir === 'between') {
-    const offsideTop = (centerY - (elHeight / 2)) < 0;
-    const offsideBottom = (centerY + (elHeight / 2)) > innerHeight;
+    const offsideTop = centerY - elHeight / 2 < 0;
+    const offsideBottom = centerY + elHeight / 2 > innerHeight;
 
     if (offsideTop) {
-      styles.top = `${ space }px`;
-      styles.maxHeight = `${ innerHeight - space * 2 }px`;
+      styles.top = `${space}px`;
+      styles.maxHeight = `${innerHeight - space * 2}px`;
       element.classList.add('y-screen-top');
     } else if (offsideBottom) {
-      styles.bottom = `${ space }px`;
-      styles.maxHeight = `${ innerHeight - space * 2 }px`;
+      styles.bottom = `${space}px`;
+      styles.maxHeight = `${innerHeight - space * 2}px`;
       element.classList.add('y-screen-bottom');
     } else {
-      styles.top = `${ centerY }px`;
-      styles.marginTop = `-${ Math.ceil(elHeight / 2) }px`;
+      styles.top = `${centerY}px`;
+      styles.marginTop = `-${Math.ceil(elHeight / 2)}px`;
       element.classList.add('y-between');
     }
   } else if (yDir === 'top') {
-    styles.top = `${ top }px`;
+    styles.top = `${top}px`;
     element.classList.add('y-top');
   } else if (yDir === 'bottom') {
-    styles.bottom = `${ bottom }px`;
+    styles.bottom = `${bottom}px`;
     element.classList.add('y-bottom');
   }
 
@@ -288,9 +271,7 @@ export function restore(options: RectOptions, debounce?: number) {
   const { element, parent } = options;
 
   if (!element || !parent) {
-    console.warn(
-      'Popup ignored because the given element/parent in the options is not an HTML Element.',
-    );
+    console.warn('Popup ignored because the given element/parent in the options is not an HTML Element.');
     return;
   }
 
@@ -429,8 +410,8 @@ export function dialog(self: HTMLDialogElement, options: DialogOptions): PopupIn
       appendTo(container, self);
 
       const { width, height } = elem.getBoundingClientRect();
-      elem.style.setProperty('--offset-left', `${ width / 2 }px`);
-      elem.style.setProperty('--offset-top', `${ height / 2 }px`);
+      elem.style.setProperty('--offset-left', `${width / 2}px`);
+      elem.style.setProperty('--offset-top', `${height / 2}px`);
     }
 
     if (typeof cb === 'function') {
@@ -472,7 +453,8 @@ export function dialog(self: HTMLDialogElement, options: DialogOptions): PopupIn
   }
 
   return {
-    show, hide,
+    show,
+    hide,
     update(cfg: PopupOptions) {
       overlay = cfg.overlay;
       container = (cfg.container || '.dialog-container') as string;
@@ -509,7 +491,7 @@ export function tooltip(parent: HTMLElement, textOption: string | TooltipOptions
       element.innerText = option.text;
 
       if (option.className) {
-        element.setAttribute('class', [ 'tooltip fade-in', option.className ].join(' '));
+        element.setAttribute('class', ['tooltip fade-in', option.className].join(' '));
       }
     }
   };
@@ -576,7 +558,9 @@ function isBackdropClick(event: MouseEvent): boolean {
 
   if (target) {
     const rect = target.getBoundingClientRect();
-    return (rect.left > event.clientX || rect.right < event.clientX) || (rect.top > event.clientY || rect.bottom < event.clientY);
+    return (
+      rect.left > event.clientX || rect.right < event.clientX || rect.top > event.clientY || rect.bottom < event.clientY
+    );
   }
 
   return false;

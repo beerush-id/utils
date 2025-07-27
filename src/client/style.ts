@@ -1,22 +1,20 @@
 import { entries } from '../global/index.js';
-import { KebabCase } from '../global/string.js';
+import { type KebabCase } from '../global/string.js';
 
 export type CSSProperties = Partial<
   {
     [K in KebabCase<keyof CSSStyleDeclaration>]: string | number;
-  } &
-  {
+  } & {
     [K in keyof CSSStyleDeclaration]: string | number;
-  } &
-  {
-    [key: `--${ string }`]: string | number;
+  } & {
+    [key: `--${string}`]: string | number;
   }
 >;
 
 export type CSSStyles = {
   [K in keyof CSSStyleDeclaration]: number | string;
 } & {
-  [key: `--${ string }`]: number | string;
+  [key: `--${string}`]: number | string;
 };
 
 export type StyleOptions = {
@@ -30,7 +28,7 @@ export type StyleInstance = {
   destroy: () => void;
 };
 
-export const CSS_UNIT_REGEX = /(\d+)(px|pc|pt|mm|cm|in)/ig;
+export const CSS_UNIT_REGEX = /(\d+)(px|pc|pt|mm|cm|in)/gi;
 export const CSS_SINGLE_UNIT_REGEX = /(\d+)(px|pc|pt|mm|cm|in)/i;
 
 /**
@@ -55,7 +53,7 @@ function styleElement(element: HTMLElement, styles: CSSProperties, reset?: boole
     element.removeAttribute('style');
   }
 
-  for (const [ key, value ] of entries(styles)) {
+  for (const [key, value] of entries(styles)) {
     if (typeof value !== 'undefined' && value !== null) {
       const val: string = toCssUnit(key, value, deltaScale);
 
@@ -73,9 +71,9 @@ export function toCssUnit(key: keyof CSSProperties, value: string | number, scal
     const values = value.match(CSS_UNIT_REGEX);
 
     if (values) {
-      values.forEach(v => {
-        const [ , num, unit ] = v.match(CSS_SINGLE_UNIT_REGEX) as RegExpMatchArray;
-        value = (value as string).replace(v, `${ parseFloat(num) * scale }${ unit }`);
+      values.forEach((v) => {
+        const [, num, unit] = v.match(CSS_SINGLE_UNIT_REGEX) as RegExpMatchArray;
+        value = (value as string).replace(v, `${parseFloat(num) * scale}${unit}`);
       });
     }
 
@@ -85,14 +83,14 @@ export function toCssUnit(key: keyof CSSProperties, value: string | number, scal
   const unit = UNIT_MAP.find(({ search }) => search.test(key as string));
 
   if (unit) {
-    return unit.unit ? `${ value * scale }` : `${ value }${ unit.unit }`;
+    return unit.unit ? `${value * scale}` : `${value}${unit.unit}`;
   }
 
-  if ((value > 0 || value < 0)) {
-    return `${ value * scale }px`;
+  if (value > 0 || value < 0) {
+    return `${value * scale}px`;
   }
 
-  return `${ value * scale }`;
+  return `${value * scale}`;
 }
 
 const UNIT_MAP = [

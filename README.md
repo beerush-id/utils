@@ -12,10 +12,10 @@ To run the documentation locally:
 
 ```bash
 # Install dependencies
-npm install
+bun install
 
 # Run documentation dev server
-npm run docs:dev
+bun run docs:dev
 ```
 
 ### Building Documentation
@@ -23,7 +23,7 @@ npm run docs:dev
 To build the documentation for production:
 
 ```bash
-npm run docs:build
+bun run docs:build
 ```
 
 The built documentation will be located in `docs/.vitepress/dist`.

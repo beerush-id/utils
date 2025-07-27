@@ -55,6 +55,9 @@
     "build": "rimraf lib && tsup && publint",
     "prepublish": "rimraf lib && tsup && publint",
     "docs": "typedoc",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "test": "vitest --run"
   },
   "author": "Nanang Mahdaen El Agung <mahdaen@gmail.com>",
@@ -71,7 +74,7 @@
     "rimraf": "^6.0.1",
     "tsup": "^8.4.0",
     "typescript-eslint": "^8.27.0",
-    "typedoc": "^0.24.8",
+    "vitepress": "^1.6.3",
     "vitest": "^1.5.0"
   },
   "peerDependencies": {

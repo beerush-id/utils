@@ -21,3 +21,8 @@ Thumbs.db
 .idea
 .vscode
 lib
+
+# VitePress
+docs/.vitepress/dist
+docs/.vitepress/cache
+docs/.vitepress/local
